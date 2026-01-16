@@ -9,6 +9,7 @@ from flask_login import (
     current_user,
 )
 from werkzeug.security import generate_password_hash, check_password_hash
+from collections import defaultdict
 
 app = Flask(__name__)
 
@@ -52,70 +53,60 @@ def load_user(user_id):
 @login_required
 def dashboard():
     expenses = Expense.query.filter_by(user_id=current_user.id).all()
+
     total = sum(exp.amount for exp in expenses)
+
+    category_data = defaultdict(float)
+    for exp in expenses:
+        category_data[exp.category] += exp.amount
+
     return render_template(
         "dashboard.html",
         user=current_user,
         expenses=expenses,
         total=total,
+        categories=list(category_data.keys()),
+        values=list(category_data.values()),
     )
 
 @app.route("/add_expense", methods=["POST"])
 @login_required
 def add_expense():
-    amount = request.form["amount"]
-    category = request.form["category"]
-    description = request.form["description"]
-
     new_expense = Expense(
-        amount=float(amount),
-        category=category,
-        description=description,
+        amount=float(request.form["amount"]),
+        category=request.form["category"],
+        description=request.form["description"],
         user_id=current_user.id,
     )
-
     db.session.add(new_expense)
     db.session.commit()
+    return redirect(url_for("dashboard"))
 
-    flash("Expense added successfully")
+@app.route("/delete_all", methods=["POST"])
+@login_required
+def delete_all():
+    Expense.query.filter_by(user_id=current_user.id).delete()
+    db.session.commit()
     return redirect(url_for("dashboard"))
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
-
-        if User.query.filter_by(username=username).first():
-            flash("Username already exists")
-            return redirect(url_for("register"))
-
-        hashed_password = generate_password_hash(password)
-        new_user = User(username=username, password=hashed_password)
-
-        db.session.add(new_user)
+        hashed = generate_password_hash(request.form["password"])
+        user = User(username=request.form["username"], password=hashed)
+        db.session.add(user)
         db.session.commit()
-
-        flash("Registration successful. Please log in.")
         return redirect(url_for("login"))
-
     return render_template("register.html")
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
-
-        user = User.query.filter_by(username=username).first()
-
-        if user and check_password_hash(user.password, password):
+        user = User.query.filter_by(username=request.form["username"]).first()
+        if user and check_password_hash(user.password, request.form["password"]):
             login_user(user)
             return redirect(url_for("dashboard"))
-
-        flash("Invalid username or password")
-        return redirect(url_for("login"))
-
+        flash("Invalid credentials")
     return render_template("login.html")
 
 @app.route("/logout")
