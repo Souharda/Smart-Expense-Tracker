@@ -51,7 +51,34 @@ def load_user(user_id):
 @app.route("/")
 @login_required
 def dashboard():
-    return render_template("dashboard.html", user=current_user)
+    expenses = Expense.query.filter_by(user_id=current_user.id).all()
+    total = sum(exp.amount for exp in expenses)
+    return render_template(
+        "dashboard.html",
+        user=current_user,
+        expenses=expenses,
+        total=total,
+    )
+
+@app.route("/add_expense", methods=["POST"])
+@login_required
+def add_expense():
+    amount = request.form["amount"]
+    category = request.form["category"]
+    description = request.form["description"]
+
+    new_expense = Expense(
+        amount=float(amount),
+        category=category,
+        description=description,
+        user_id=current_user.id,
+    )
+
+    db.session.add(new_expense)
+    db.session.commit()
+
+    flash("Expense added successfully")
+    return redirect(url_for("dashboard"))
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -105,4 +132,3 @@ if __name__ == "__main__":
     with app.app_context():
         db.create_all()
     app.run(debug=True)
-
