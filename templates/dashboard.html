@@ -1,54 +1,85 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Dashboard</title>
+    <title>Dashboard | Smart Expense Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
+<body class="bg-light">
 
-<h2>Welcome, {{ user.username }}!</h2>
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+        <span class="navbar-brand">Smart Expense Tracker</span>
+        <a href="/logout" class="btn btn-outline-light">Logout</a>
+    </div>
+</nav>
 
-<h3>Add Expense</h3>
-<form method="POST" action="/add_expense">
-    <input type="number" step="0.01" name="amount" placeholder="Amount" required><br><br>
+<div class="container mt-4">
 
-    <select name="category" required>
-        <option value="">Select category</option>
-        <option value="Food">Food</option>
-        <option value="Travel">Travel</option>
-        <option value="Rent">Rent</option>
-        <option value="Shopping">Shopping</option>
-        <option value="Other">Other</option>
-    </select><br><br>
+    <h4>Welcome, {{ user.username }} 👋</h4>
 
-    <input type="text" name="description" placeholder="Description"><br><br>
+    <div class="row mt-4">
+        <!-- Add Expense -->
+        <div class="col-md-4">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5>Add Expense</h5>
 
-    <button type="submit">Add Expense</button>
-</form>
+                    <form method="POST" action="/add_expense">
+                        <input type="number" step="0.01" name="amount" class="form-control mb-2" placeholder="Amount" required>
 
-<hr>
+                        <select name="category" class="form-control mb-2" required>
+                            <option value="">Select category</option>
+                            <option>Food</option>
+                            <option>Travel</option>
+                            <option>Rent</option>
+                            <option>Shopping</option>
+                            <option>Other</option>
+                        </select>
 
-<h3>Your Expenses</h3>
+                        <input type="text" name="description" class="form-control mb-2" placeholder="Description">
 
-<table border="1" cellpadding="5">
-    <tr>
-        <th>Amount</th>
-        <th>Category</th>
-        <th>Description</th>
-    </tr>
+                        <button class="btn btn-primary w-100">Add</button>
+                    </form>
+                </div>
+            </div>
+        </div>
 
-    {% for exp in expenses %}
-    <tr>
-        <td>{{ exp.amount }}</td>
-        <td>{{ exp.category }}</td>
-        <td>{{ exp.description }}</td>
-    </tr>
-    {% endfor %}
-</table>
+        <!-- Expense List -->
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5>Your Expenses</h5>
 
-<h3>Total Expense: {{ total }}</h3>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Amount</th>
+                                <th>Category</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for exp in expenses %}
+                            <tr>
+                                <td>{{ exp.amount }}</td>
+                                <td>{{ exp.category }}</td>
+                                <td>{{ exp.description }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
 
-<br>
-<a href="/logout">Logout</a>
+                    <h5>Total: ₹ {{ total }}</h5>
+
+                    <form method="POST" action="/delete_all">
+                        <button class="btn btn-danger">Delete All</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
 
 </body>
 </html>
