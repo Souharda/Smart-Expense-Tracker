@@ -40,3 +40,17 @@ python app.py
 Open browser:
 
 http://127.0.0.1:5000
+📌 Future Improvements
+
+Monthly expense filtering
+
+Export expenses to CSV
+
+Deployment on cloud
+
+Better UI animations
+
+👤 Author
+
+Souharda Saha, IIT Jodhpur
+
